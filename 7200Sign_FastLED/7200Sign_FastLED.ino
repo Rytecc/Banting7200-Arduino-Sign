@@ -42,7 +42,8 @@ void loop() {
   }
 
   tickCount++;
-  Serial.println(digitalRead(7));
+
+  FastLED.show();
   delay(PROGRAM_TICKDELAY);
 }
 
@@ -51,16 +52,13 @@ void offMode() {
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = CRGB(0, 0, 0);
   }
-
-  FastLED.show();
 }
 
-int effect1_lastTickRun = 0;
 int effect1_knightRiderPosition = 0;
 int effect1_posDelta = 1;
 void effect1() {
   //Wait a certain amount of ticks (20ms delays) before running
-  if (tickCount - effect1_lastTickRun < EFFECT1_TICKSDELAY) {
+  if (tickCount % 3 != 0) {
     return;
   }
 
@@ -76,12 +74,6 @@ void effect1() {
 
   //Set the light at now changed pointer to color
   leds[effect1_knightRiderPosition] = CRGB(255, 0, 0);
-
-  //Push changes to LEDs
-  FastLED.show();
-
-  //Reset the tick counter
-  effect1_lastTickRun = tickCount;
 }
 
 int getMode() {
