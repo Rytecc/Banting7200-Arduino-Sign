@@ -36,21 +36,26 @@ void loop() {
       effect1();
       break;
 
-    default:
-      offMode();
+    case 7:
+      effect2();
+      break;
+
+    case 6:
+      clear(0, 0, 0);
       break;
   }
 
   tickCount++;
 
+  Serial.println(ledMode);
   FastLED.show();
   delay(PROGRAM_TICKDELAY);
 }
 
 // Default lighting mode that turns off light
-void offMode() {
+void clear(int r, int g, int b) {
   for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB(0, 0, 0);
+    leds[i] = CRGB(r, g, b);
   }
 }
 
@@ -58,12 +63,12 @@ int effect1_knightRiderPosition = 0;
 int effect1_posDelta = 1;
 void effect1() {
   //Wait a certain amount of ticks (20ms delays) before running
-  if (tickCount % 3 != 0) {
+  if (tickCount % 20 != 0) {
     return;
   }
 
   //Set the current pointer LED to off
-  leds[effect1_knightRiderPosition] = CRGB(0, 0, 0);
+  clear(255, 0, 0);
 
   //Based on position of LED pointer (leftbound or rightbound), make it go back or forward
   // forward if pointer was at beginning of light array
@@ -73,7 +78,13 @@ void effect1() {
   effect1_knightRiderPosition += effect1_posDelta;
 
   //Set the light at now changed pointer to color
-  leds[effect1_knightRiderPosition] = CRGB(255, 0, 0);
+  leds[effect1_knightRiderPosition] = CRGB(255, 0, 255);
+}
+
+int effect2_rainbowFirstPixelHue = 0;
+void effect2() {
+  int initHue = beat8(10, 255);
+  fill_rainbow(leds, NUM_LEDS, initHue, 10);
 }
 
 int getMode() {
