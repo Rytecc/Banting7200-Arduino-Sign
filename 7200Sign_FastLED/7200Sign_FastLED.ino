@@ -33,7 +33,7 @@ void loop() {
   ledMode = getMode();
   switch (ledMode) {
     case 5:
-      effect1();
+      clear(0, 0, 0);
       break;
 
     case 7:
@@ -41,7 +41,7 @@ void loop() {
       break;
 
     case 6:
-      clear(0, 0, 0);
+      effect1();
       break;
   }
 
