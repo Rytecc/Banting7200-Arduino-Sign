@@ -1,4 +1,6 @@
+#include <LiquidCrystal.h>
 #include <FastLED.h>
+
 #define PROGRAM_TICKDELAY 20
 #define NUM_LEDS 5  //every 3 lights is incremented as 1 LED (ex. value of 2 means 6 lights will light up)
 #define DATA_PIN 8
@@ -12,42 +14,24 @@
 
 long tickCount = 0;
 int ledMode = 0;
+
+LiquidCrystal modeDisplay(8, 9, 10, 11, 12, 13);
 CRGB leds[NUM_LEDS];
 
 void setup() {
   Serial.begin(9600);
 
-  // Set button pins to input
-  for (int btn = 5; btn <= 7; btn++) {
-    pinMode(btn, INPUT);
-  }
-
-  //Set LED signal pin to OUTPUT
-  pinMode(8, OUTPUT);
-
   //Initialise LEDs
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  modeDisplay.begin(16, 2);
+  modeDisplay.print("Hello World");
 }
 
 void loop() {
-  ledMode = getMode();
-  switch (ledMode) {
-    case 5:
-      clear(0, 0, 0);
-      break;
 
-    case 7:
-      effect2();
-      break;
-
-    case 6:
-      effect1();
-      break;
-  }
 
   tickCount++;
-
-  Serial.println(ledMode);
+  clear(0, 0, 0);
   FastLED.show();
   delay(PROGRAM_TICKDELAY);
 }
@@ -85,15 +69,4 @@ int effect2_rainbowFirstPixelHue = 0;
 void effect2() {
   int initHue = beat8(10, 255);
   fill_rainbow(leds, NUM_LEDS, initHue, 10);
-}
-
-int getMode() {
-  int mode = ledMode;
-  for (int btn = 5; btn <= 7; btn++) {
-    if (digitalRead(btn) == 1) {
-      mode = btn;
-    }
-  }
-
-  return mode;
 }
