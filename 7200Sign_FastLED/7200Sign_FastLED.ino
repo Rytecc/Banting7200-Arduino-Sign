@@ -6,8 +6,9 @@
 #define OLED_ADDR 0x3C
 #define PROGRAM_DEFAULTTICKDELAY 20
 
+#define POT_SPEED A0
 #define BTN_MODE 6
-#define LIGHTS_LEDCOUNT 5  //every 3 lights is incremented as 1 LED (ex. value of 2 means 6 lights will light up)
+#define LIGHTS_LEDCOUNT 17  //every 3 lights is incremented as 1 LED (ex. value of 2 means 6 lights will light up)
 #define LIGHTS_DATAPIN 7
 
 long tickCount = 0;
@@ -18,11 +19,11 @@ int tickDelay = PROGRAM_DEFAULTTICKDELAY;
 // be displayed to the user. They also double as a means
 // for indexing certain effects in the playEffects() function. (line 92)
 String effectNames[5] = {
-  "Red lights", //clear(0, 255, 0);
-  "Blue lights", //clear(0, 0, 255);
-  "Rainbow", //rainbowEffect();
-  "Snake", //snakeEffect();
-  "Knightrider" //knightRider();
+  "Red lights",   //clear(0, 255, 0);
+  "Blue lights",  //clear(0, 0, 255);
+  "Rainbow",      //rainbowEffect();
+  "Snake",        //snakeEffect();
+  "Knightrider"   //knightRider();
 };
 
 Adafruit_SSD1306 display(-1);
@@ -50,11 +51,18 @@ void setup() {
   display.setCursor(0, 30);
   display.setTextSize(1);
   display.setTextColor(WHITE);
+
+  displayMode(ledMode);
 }
 
 void loop() {
+  //Set the program speed based on potentiometer input
+  setTickingSpeed();
+
+  //Get the mode that the user wants to play
   int newMode = getCurrentMode(ledMode);
-  playEffect(newMode);
+  playEffects(newMode);
+
   //Increment the ticking system and apply effects
   tickCount++;
   FastLED.show();
@@ -62,7 +70,7 @@ void loop() {
   // Delay for the specified tickDelay
   // Modifying the tickDelay integer will effectively modulate the speed of the program
   // Therefore making effects faster or slower.
-  delay(tickDelay);
+  delay(20);
 }
 
 int getCurrentMode(int lastMode) {
@@ -76,26 +84,39 @@ int getCurrentMode(int lastMode) {
       mode = 0;
     }
 
-    // Clear the display
-    display.clearDisplay();
-    display.display();
-
-    // Display the current light effect being played.
-    display.setCursor(0, 30);
-    display.print("Current Mode:\n" + effectNames[ledMode]);
-    display.display();
+    displayMode(mode);
   }
 
+  ledMode = mode;
   return mode;
 }
 
+void setTickingSpeed() {
+  int potRead = analogRead(POT_SPEED);
+  potRead = map(potRead, 0, 1023, 0, 100);
+
+  tickDelay = potRead;
+}
+
+void displayMode(int modeIndex) {
+  // Clear the display
+  display.clearDisplay();
+  display.display();
+
+  // Display the current light effect being played.
+  display.setCursor(0, 30);
+  display.print(effectNames[modeIndex]);
+  display.display();
+}
+
 void playEffects(int effectID) {
-  switch(effectID) {
+  switch (effectID) {
     // Play effects based on effectID
     // To see why it goes from 0 to 4, refer to line 20.
-    case 0: clear(0, 255, 0); break;
+    case 0: clear(255, 0, 0); break;
     case 1: clear(0, 0, 255); break;
     case 2: rainbowEffect(); break;
+    case 3: clear(0, 0, 255); break;
     case 4: knightRider(); break;
 
     //For default cases, turn off light
@@ -114,7 +135,8 @@ int effect1_knightRiderPosition = 0;
 int effect1_posDelta = 1;
 void knightRider() {
   //Wait a certain amount of ticks (20ms delays) before running
-  if (tickCount % 20 != 0) {
+  int extraDelay = int(((double)20 * (tickDelay * 0.01)));
+  if (tickCount % (20 + extraDelay) != 0) {
     return;
   }
 
@@ -135,10 +157,14 @@ void knightRider() {
 int effect2_rainbowFirstPixelHue = 0;
 void rainbowEffect() {
   //Get an initial hue using a sawtooth wave function 'beat8'
-  int initHue = beat8(10, 255);
+  int initHue = beat8(50, 255);
 
   //Fill all strips with a rainbow effect
   fill_rainbow(leds, LIGHTS_LEDCOUNT, initHue, 10);
+}
+
+void snakeEffect() {
+
 }
 
 bool buttonReady = false;
